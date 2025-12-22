@@ -1,4 +1,4 @@
-:root {
+/* :root {
   --background: #ffffff;
   --foreground: #171717;
 }
@@ -39,4 +39,59 @@ a {
   html {
     color-scheme: dark;
   }
+} */
+:root {
+  --background: #212121;
+  --foreground: #ffffff;
+
+  --sidebar-bg: #181818;
+  --card-bg: #303030;
+
+  --surface-dark: #303030;
+  --text-secondary: #aaaaaa;
+
+  --border: #333333;
+
+  --font-primary: var(--font-science-gothic);
+  --font-secondary: var(--font-poppins);
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: var(--font-secondary), sans-serif;
+  /* Poppins for general text */
+  margin: 0;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-primary), sans-serif;
+  /* Science Gothic for headings */
+}
+
+/* Force MUI components to respect these choices without ThemeRegistry */
+.MuiTypography-h1,
+.MuiTypography-h2,
+.MuiTypography-h3,
+.MuiTypography-h4,
+.MuiTypography-h5,
+.MuiTypography-h6 {
+  font-family: var(--font-primary), sans-serif !important;
+}
+
+.MuiTypography-body1,
+.MuiTypography-body2,
+.MuiTypography-button,
+.MuiTypography-caption,
+.MuiTypography-overline,
+.MuiButton-root,
+.MuiInputBase-root,
+.MuiMenuItem-root,
+.MuiTableCell-root {
+  font-family: var(--font-secondary), sans-serif !important;
 }
