@@ -239,7 +239,9 @@ export default function SuperintendentManagementLayout() {
         <Sidebar />
       </Box>
 
-      {/* Main Content */}
+      {/* Main Content,  main content */}
+      {/* Main Content,  main content */}
+
       <Box
         sx={{
           width: "80%",
