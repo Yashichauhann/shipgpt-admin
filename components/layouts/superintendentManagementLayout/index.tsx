@@ -1,7 +1,10 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Sidebar from "@/components/widgets/Sidebar";
 import Navbar from "@/components/widgets/Navbar";
+import { useFormik } from "formik";
+import * as Yup from "yup";
+import { authControllers } from "@/api/auth";
 import {
   Box,
   Typography,
@@ -25,7 +28,6 @@ import RemoveRedEyeIcon from "@mui/icons-material/RemoveRedEye";
 import CloseIcon from "@mui/icons-material/Close";
 import EditIcon from "@mui/icons-material/Edit";
 import { COLORS } from "@/utils/enum";
-import { authControllers } from "@/api/auth";
 
 // Types
 interface Superintendent {
@@ -38,117 +40,90 @@ interface Superintendent {
 }
 
 const MOCK_SUPERINTENDENTS: Superintendent[] = [
-  {
-    id: 1,
-    firstName: "Robert",
-    lastName: "Wilson",
-    email: "robert.w@shippgpt.com",
-    role: "Senior Superintendent",
-    status: "Active",
-  },
-  {
-    id: 2,
-    firstName: "Alice",
-    lastName: "Brown",
-    email: "alice.b@shippgpt.com",
-    role: "Superintendent",
-    status: "Active",
-  },
-  {
-    id: 3,
-    firstName: "David",
-    lastName: "Lee",
-    email: "david.l@shippgpt.com",
-    role: "Junior Superintendent",
-    status: "Inactive",
-  },
+    { id: 1, firstName: "Robert", lastName: "Wilson", email: "robert.w@shippgpt.com", role: "Senior Superintendent", status: "Active" },
+    { id: 2, firstName: "Alice", lastName: "Brown", email: "alice.b@shippgpt.com", role: "Superintendent", status: "Active" },
+    { id: 3, firstName: "David", lastName: "Lee", email: "david.l@shippgpt.com", role: "Junior Superintendent", status: "Inactive" },
 ];
 
 export default function SuperintendentManagementLayout() {
-  const [superintendents, setSuperintendents] =
-    useState<Superintendent[]>(MOCK_SUPERINTENDENTS);
-  const [openAddModal, setOpenAddModal] = useState(false);
-  const [openViewModal, setOpenViewModal] = useState(false);
-  const [openConfirmModal, setOpenConfirmModal] = useState(false);
-  const [selectedSuperintendent, setSelectedSuperintendent] =
-    useState<Superintendent | null>(null);
-  const [isEditing, setIsEditing] = useState(false);
+    const [superintendents, setSuperintendents] = useState<Superintendent[]>(MOCK_SUPERINTENDENTS);
+    const [openAddModal, setOpenAddModal] = useState(false);
+    const [openViewModal, setOpenViewModal] = useState(false);
+    const [openConfirmModal, setOpenConfirmModal] = useState(false);
+    const [selectedSuperintendent, setSelectedSuperintendent] = useState<Superintendent | null>(null);
+    const [isEditing, setIsEditing] = useState(false);
 
-  // Form states
-  const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    password: "",
-  });
-
-  const resetForm = () => {
-    setFormData({
-      firstName: "",
-      lastName: "",
-      email: "",
-      password: "",
+    // Form states
+    const [formData, setFormData] = useState({
+        firstName: "",
+        lastName: "",
+        email: "",
+        password: ""
     });
-  };
 
-  const handleOpenAdd = () => {
-    resetForm();
-    setOpenAddModal(true);
-  };
-
-  const handleOpenView = (member: Superintendent) => {
-    setSelectedSuperintendent(member);
-    setFormData({
-      firstName: member.firstName,
-      lastName: member.lastName,
-      email: member.email,
-      password: "", // Don't show password
-    });
-    setIsEditing(false);
-    setOpenViewModal(true);
-  };
-
-  const handleCloseView = () => {
-    setSelectedSuperintendent(null);
-    setOpenViewModal(false);
-    setIsEditing(false);
-  };
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleAddSuperintendent = () => {
-    // Just mock adding for now
-    const newMember: Superintendent = {
-      id: superintendents.length + 1,
-      firstName: formData.firstName,
-      lastName: formData.lastName,
-      email: formData.email,
-      role: "Superintendent", // Default
-      status: "Active",
+    const resetForm = () => {
+        setFormData({
+            firstName: "",
+            lastName: "",
+            email: "",
+            password: ""
+        });
     };
-    setSuperintendents([...superintendents, newMember]);
-    setOpenAddModal(false);
-    resetForm();
-  };
 
-  const handleUpdateSuperintendent = () => {
-    if (!selectedSuperintendent) return;
-    const updatedMember: Superintendent = {
-      ...selectedSuperintendent,
-      firstName: formData.firstName,
-      lastName: formData.lastName,
-      email: formData.email,
+    const handleOpenAdd = () => {
+        resetForm();
+        setOpenAddModal(true);
     };
-    setSuperintendents(
-      superintendents.map((c) =>
-        c.id === selectedSuperintendent.id ? updatedMember : c
-      )
-    );
-    setSelectedSuperintendent(updatedMember);
-    setIsEditing(false);
-  };
+
+    const handleOpenView = (member: Superintendent) => {
+        setSelectedSuperintendent(member);
+        setFormData({
+            firstName: member.firstName,
+            lastName: member.lastName,
+            email: member.email,
+            password: "" // Don't show password
+        });
+        setIsEditing(false);
+        setOpenViewModal(true);
+    };
+
+    const handleCloseView = () => {
+        setSelectedSuperintendent(null);
+        setOpenViewModal(false);
+        setIsEditing(false);
+    };
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
+
+    const handleAddSuperintendent = () => {
+        // Just mock adding for now
+        const newMember: Superintendent = {
+            id: superintendents.length + 1,
+            firstName: formData.firstName,
+            lastName: formData.lastName,
+            email: formData.email,
+            role: "Superintendent", // Default
+            status: "Active"
+        };
+        setSuperintendents([...superintendents, newMember]);
+        setOpenAddModal(false);
+        resetForm();
+    };
+
+    const handleUpdateSuperintendent = () => {
+        if (!selectedSuperintendent) return;
+        const updatedMember: Superintendent = {
+            ...selectedSuperintendent,
+            firstName: formData.firstName,
+            lastName: formData.lastName,
+            email: formData.email
+        };
+        setSuperintendents(superintendents.map(c => c.id === selectedSuperintendent.id ? updatedMember : c));
+        setSelectedSuperintendent(updatedMember);
+        setIsEditing(false);
+    };
 
   const handleToggleStatusClick = (member: Superintendent) => {
     setSelectedSuperintendent(member);
@@ -378,200 +353,114 @@ export default function SuperintendentManagementLayout() {
             </Table>
           </TableContainer>
 
-          {/* Add/View/Edit Modal */}
-          <Modal
-            open={openAddModal || openViewModal}
-            onClose={
-              openAddModal ? () => setOpenAddModal(false) : handleCloseView
-            }
-          >
-            <Box sx={modalStyle}>
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  mb: 3,
-                }}
-              >
-                <Typography variant="h6" fontWeight={600} sx={commonStyles}>
-                  {openAddModal
-                    ? "Add New Superintendent"
-                    : isEditing
-                    ? "Edit Superintendent Details"
-                    : "Superintendent Details"}
-                </Typography>
-                <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                  {!openAddModal && !isEditing && (
-                    <>
-                      <IconButton
-                        onClick={() => setIsEditing(true)}
-                        sx={{ color: "var(--foreground)", mr: 1 }}
-                      >
-                        <EditIcon />
-                      </IconButton>
-                    </>
-                  )}
-                  <IconButton
-                    onClick={
-                      openAddModal
-                        ? () => setOpenAddModal(false)
-                        : handleCloseView
-                    }
-                    sx={{ color: "var(--text-secondary)" }}
-                  >
-                    <CloseIcon />
-                  </IconButton>
-                </Box>
-              </Box>
+                    {/* Add/View/Edit Modal */}
+                    <Modal open={openAddModal || openViewModal} onClose={openAddModal ? () => setOpenAddModal(false) : handleCloseView}>
+                        <Box sx={modalStyle}>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+                                <Typography variant="h6" fontWeight={600} sx={commonStyles}>
+                                    {openAddModal ? "Add New Superintendent" : (isEditing ? "Edit Superintendent Details" : "Superintendent Details")}
+                                </Typography>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                    {!openAddModal && !isEditing && (
+                                        <>
+                                            <IconButton onClick={() => setIsEditing(true)} sx={{ color: "var(--foreground)", mr: 1 }}>
+                                                <EditIcon />
+                                            </IconButton>
+                                        </>
+                                    )}
+                                    <IconButton onClick={openAddModal ? () => setOpenAddModal(false) : handleCloseView} sx={{ color: "var(--text-secondary)" }}>
+                                        <CloseIcon />
+                                    </IconButton>
+                                </Box>
+                            </Box>
 
-              <Stack spacing={2}>
-                {!openAddModal && !isEditing ? (
-                  // View Mode
-                  <>
-                    <Box>
-                      <Typography
-                        variant="caption"
-                        sx={{
-                          color: COLORS.WHITE,
-                          opacity: 0.7,
-                          fontFamily: "var(--font-primary) !important",
-                        }}
-                      >
-                        Name
-                      </Typography>
-                      <Typography
-                        variant="body1"
-                        fontWeight={500}
-                        sx={{
-                          color: COLORS.WHITE,
-                          fontFamily: "var(--font-primary) !important",
-                          fontSize: "1.1rem",
-                        }}
-                      >
-                        {selectedSuperintendent?.firstName}{" "}
-                        {selectedSuperintendent?.lastName}
-                      </Typography>
-                    </Box>
-                    <Box>
-                      <Typography
-                        variant="caption"
-                        sx={{
-                          color: COLORS.WHITE,
-                          opacity: 0.7,
-                          fontFamily: "var(--font-primary) !important",
-                        }}
-                      >
-                        Email
-                      </Typography>
-                      <Typography
-                        variant="body1"
-                        sx={{
-                          color: COLORS.WHITE,
-                          fontFamily: "var(--font-primary) !important",
-                          fontSize: "1.1rem",
-                        }}
-                      >
-                        {selectedSuperintendent?.email}
-                      </Typography>
-                    </Box>
-                    <Box>
-                      <Typography
-                        variant="caption"
-                        sx={{
-                          color: COLORS.WHITE,
-                          opacity: 0.7,
-                          fontFamily: "var(--font-primary) !important",
-                        }}
-                      >
-                        Role
-                      </Typography>
-                      <Typography
-                        variant="body1"
-                        sx={{
-                          color: COLORS.WHITE,
-                          fontFamily: "var(--font-primary) !important",
-                          fontSize: "1.1rem",
-                        }}
-                      >
-                        {selectedSuperintendent?.role}
-                      </Typography>
-                    </Box>
-                  </>
-                ) : (
-                  // Edit/Add Mode
-                  <>
-                    <Stack direction="row" spacing={2}>
-                      <TextField
-                        label="First Name"
-                        name="firstName"
-                        fullWidth
-                        autoComplete="off"
-                        variant="outlined"
-                        sx={textFieldStyle}
-                        value={formData.firstName}
-                        onChange={handleInputChange}
-                      />
-                      <TextField
-                        label="Last Name"
-                        name="lastName"
-                        fullWidth
-                        autoComplete="off"
-                        variant="outlined"
-                        sx={textFieldStyle}
-                        value={formData.lastName}
-                        onChange={handleInputChange}
-                      />
-                    </Stack>
-                    <TextField
-                      label="Email Address"
-                      name="email"
-                      type="email"
-                      fullWidth
-                      autoComplete="off"
-                      variant="outlined"
-                      sx={textFieldStyle}
-                      value={formData.email}
-                      onChange={handleInputChange}
-                    />
-                    {openAddModal && (
-                      <TextField
-                        label="Password"
-                        name="password"
-                        type="password"
-                        fullWidth
-                        autoComplete="new-password"
-                        variant="outlined"
-                        sx={textFieldStyle}
-                        value={formData.password}
-                        onChange={handleInputChange}
-                      />
-                    )}
-                    <Button
-                      variant="contained"
-                      fullWidth
-                      size="large"
-                      onClick={
-                        openAddModal
-                          ? handleAddSuperintendent
-                          : handleUpdateSuperintendent
-                      }
-                      sx={{
-                        mt: 2,
-                        bgcolor: COLORS.GREEN,
-                        color: COLORS.WHITE,
-                        borderRadius: 0,
-                        fontFamily: "var(--font-primary) !important",
-                        "&:hover": { bgcolor: COLORS.GREEN_DARK },
-                      }}
-                    >
-                      {openAddModal ? "Add Superintendent" : "Save Changes"}
-                    </Button>
-                  </>
-                )}
-              </Stack>
-            </Box>
-          </Modal>
+                            <Stack spacing={2}>
+                                {(!openAddModal && !isEditing) ? (
+                                    // View Mode
+                                    <>
+                                        <Box>
+                                            <Typography variant="caption" sx={{ color: COLORS.WHITE, opacity: 0.7, fontFamily: 'var(--font-primary) !important' }}>Name</Typography>
+                                            <Typography variant="body1" fontWeight={500} sx={{ color: COLORS.WHITE, fontFamily: 'var(--font-primary) !important', fontSize: '1.1rem' }}>{selectedSuperintendent?.firstName} {selectedSuperintendent?.lastName}</Typography>
+                                        </Box>
+                                        <Box>
+                                            <Typography variant="caption" sx={{ color: COLORS.WHITE, opacity: 0.7, fontFamily: 'var(--font-primary) !important' }}>Email</Typography>
+                                            <Typography variant="body1" sx={{ color: COLORS.WHITE, fontFamily: 'var(--font-primary) !important', fontSize: '1.1rem' }}>{selectedSuperintendent?.email}</Typography>
+                                        </Box>
+                                        <Box>
+                                            <Typography variant="caption" sx={{ color: COLORS.WHITE, opacity: 0.7, fontFamily: 'var(--font-primary) !important' }}>Role</Typography>
+                                            <Typography variant="body1" sx={{ color: COLORS.WHITE, fontFamily: 'var(--font-primary) !important', fontSize: '1.1rem' }}>{selectedSuperintendent?.role}</Typography>
+                                        </Box>
+                                    </>
+                                ) : (
+                                    // Edit/Add Mode
+                                    <>
+                                        <Stack direction="row" spacing={2}>
+                                            <TextField
+                                                label="First Name"
+                                                name="firstName"
+                                                fullWidth
+                                                autoComplete="off"
+                                                variant="outlined"
+                                                sx={textFieldStyle}
+                                                value={formData.firstName}
+                                                onChange={handleInputChange}
+                                            />
+                                            <TextField
+                                                label="Last Name"
+                                                name="lastName"
+                                                fullWidth
+                                                autoComplete="off"
+                                                variant="outlined"
+                                                sx={textFieldStyle}
+                                                value={formData.lastName}
+                                                onChange={handleInputChange}
+                                            />
+                                        </Stack>
+                                        <TextField
+                                            label="Email Address"
+                                            name="email"
+                                            type="email"
+                                            fullWidth
+                                            autoComplete="off"
+                                            variant="outlined"
+                                            sx={textFieldStyle}
+                                            value={formData.email}
+                                            onChange={handleInputChange}
+                                        />
+                                        {openAddModal && (
+                                            <TextField
+                                                label="Password"
+                                                name="password"
+                                                type="password"
+                                                fullWidth
+                                                autoComplete="new-password"
+                                                variant="outlined"
+                                                sx={textFieldStyle}
+                                                value={formData.password}
+                                                onChange={handleInputChange}
+                                            />
+                                        )}
+                                        <Button
+                                            variant="contained"
+                                            fullWidth
+                                            size="large"
+                                            onClick={openAddModal ? handleAddSuperintendent : handleUpdateSuperintendent}
+                                            sx={{
+                                                mt: 2,
+                                                bgcolor: COLORS.GREEN,
+                                                color: COLORS.WHITE,
+                                                borderRadius: 0,
+                                                fontFamily: 'var(--font-primary) !important',
+                                                "&:hover": { bgcolor: COLORS.GREEN_DARK },
+                                            }}
+                                        >
+                                            {openAddModal ? "Add Superintendent" : "Save Changes"}
+                                        </Button>
+                                    </>
+                                )}
+                            </Stack>
+                        </Box>
+                    </Modal>
 
           {/* Confirmation Pop-up */}
           <Modal
