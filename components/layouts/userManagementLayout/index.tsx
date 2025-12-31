@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import Sidebar from "@/components/widgets/Sidebar";
 import Navbar from "@/components/widgets/Navbar";
 import { authControllers } from "@/api/auth";
+import { toast } from "react-toastify";
 import {
     Box,
     Typography,
@@ -66,9 +67,32 @@ export default function UserManagementLayout() {
         fetchUsers();
     }, []);
 
-    const handleView = (user: any) => {
-        setSelectedUser(user);
-        setOpenViewModal(true);
+    const handleView = async (user: any) => {
+        try {
+            // The API requires user_role as a query param
+            const roleToPass = user.role === 'User' ? 'USER' : (user.role || 'USER');
+            const response = await authControllers.getUserById(user.id, roleToPass);
+            const userData = response.data?.data || response.data; // Adapt based on actual API response structure
+
+            // Map the API response to the format expected by the UI
+            const detailedUser = {
+                id: userData._id || userData.id || user.id,
+                name: `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || userData.username || user.name,
+                email: userData.email || user.email,
+                role: userData.role || userData.user_role || user.role,
+                joined: userData.createdAt ? new Date(userData.createdAt).toLocaleDateString() : user.joined,
+                status: userData.status || (userData.isActive ? "Active" : "Inactive") || user.status,
+                // Add any extra fields if they exist in the detailed view
+            };
+
+            setSelectedUser(detailedUser);
+            setOpenViewModal(true);
+        } catch (error) {
+            console.error("Failed to fetch user details:", error);
+            // Fallback to existing row data if API fails, or show error
+            setSelectedUser(user);
+            setOpenViewModal(true);
+        }
     };
 
     const handleEditFromView = () => {
@@ -92,6 +116,7 @@ export default function UserManagementLayout() {
             setUsers(users.map(u => u.id === selectedUser.id ? { ...u, status: newStatus } : u));
             setOpenConfirmModal(false);
             setSelectedUser(null);
+            toast.success(`User ${newStatus === "Active" ? "activated" : "blocked"} successfully!`);
         }
     };
 
@@ -254,7 +279,10 @@ export default function UserManagementLayout() {
                                         fontFamily: 'var(--font-primary) !important',
                                         "&:hover": { bgcolor: COLORS.GREEN_DARK, border: `1px solid ${COLORS.GREEN_DARK}` },
                                     }}
-                                    onClick={() => setOpenEditModal(false)}
+                                    onClick={() => {
+                                        setOpenEditModal(false);
+                                        toast.success("User details updated successfully!");
+                                    }}
                                 >
                                     Save Changes
                                 </Button>

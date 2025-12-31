@@ -2,6 +2,8 @@
 import { useState, useRef } from "react";
 import Sidebar from "@/components/widgets/Sidebar";
 import Navbar from "@/components/widgets/Navbar";
+import { shipControllers } from "@/api/ship";
+import { toast } from "react-toastify";
 import {
     Box,
     Typography,
@@ -51,7 +53,7 @@ interface Ship {
     name: string;
     imo: string;
     status: string;
-    documents: Record<string, ShipDocument[]>; // Category -> Documents
+    documents: Record<string, ShipDocument[]>;
 }
 
 const CATEGORIES = ["Compliance", "Crewing", "Mechanical"];
@@ -121,10 +123,9 @@ export default function ShipManagementLayout() {
 
     const handleOpenView = (ship: Ship) => {
         setSelectedShip(ship);
-        // Pre-populate form data for editing logic
         setName(ship.name);
         setImo(ship.imo);
-        setPendingDocuments(ship.documents); // In a real app, do deep copy
+        setPendingDocuments(ship.documents);
         setIsEditing(false);
         setOpenViewModal(true);
     };
@@ -148,9 +149,6 @@ export default function ShipManagementLayout() {
             }));
         }
     };
-
-
-
     const handleToggleStatusClick = (ship: Ship) => {
         setSelectedShip(ship);
         setOpenConfirmModal(true);
@@ -162,20 +160,39 @@ export default function ShipManagementLayout() {
             setShips(ships.map(s => s.id === selectedShip.id ? { ...s, status: newStatus } : s));
             setOpenConfirmModal(false);
             setSelectedShip(null);
+            toast.success(`Ship status updated to ${newStatus}!`);
         }
     };
 
-    const handleAddShip = () => {
-        const newShip: Ship = {
-            id: ships.length + 1,
-            name,
-            imo,
-            status: "Active",
-            documents: pendingDocuments
+    const handleAddShip = async () => {
+        const payload = {
+            name: name,
+            IMO: imo
         };
-        setShips([...ships, newShip]);
-        setOpenAddModal(false);
-        resetForm();
+
+        try {
+            const response = await shipControllers.createShip(payload);
+            // Assuming the API returns the created object or strictly the status. 
+            // Ideally we fetch the list again, but for now we append to local state.
+            // If response.data contains the new ship object including an ID:
+            const newShipData = response.data?.data || response.data || payload; // Fallback to payload
+
+            const newShip: Ship = {
+                id: newShipData.id || ships.length + 1, // Use returned ID or generate one
+                name: newShipData.name || name,
+                imo: newShipData.IMO || imo,
+                status: "Active",
+                documents: pendingDocuments // API might not handle docs in this call, preserving local state for now
+            };
+
+            setShips([...ships, newShip]);
+            toast.success("Ship created successfully!");
+            setOpenAddModal(false);
+            resetForm();
+        } catch (error: any) {
+            console.error("Error creating ship:", error);
+            toast.error(error.response?.data?.message || "Failed to create ship. Please try again.");
+        }
     };
 
     const handleUpdateShip = () => {
@@ -189,12 +206,14 @@ export default function ShipManagementLayout() {
         setShips(ships.map(s => s.id === selectedShip.id ? updatedShip : s));
         setSelectedShip(updatedShip);
         setIsEditing(false);
+        toast.success("Ship details updated successfully!");
     };
 
     const handleDeleteShip = () => {
         if (!selectedShip) return;
         setShips(ships.filter(s => s.id !== selectedShip.id));
         handleCloseView();
+        toast.success("Ship deleted successfully!");
     };
 
     const removeDocument = (category: string, index: number) => {
@@ -256,7 +275,7 @@ export default function ShipManagementLayout() {
                 '& .MuiInputBase-input': { WebkitTextFillColor: `${COLORS.WHITE} !important`, fill: COLORS.WHITE }
             }
         },
-        '& .MuiInputLabel-root': { color: COLORS.WHITE, fontFamily: 'var(--font-primary) !important' }, // White label
+        '& .MuiInputLabel-root': { color: COLORS.WHITE, fontFamily: 'var(--font-primary) !important' },
         '& .MuiInputLabel-root.Mui-focused': { color: COLORS.WHITE },
         '& .MuiSelect-icon': { color: COLORS.WHITE },
         '& .MuiInputBase-input': { fontFamily: 'var(--font-primary) !important', color: COLORS.WHITE },
@@ -275,7 +294,7 @@ export default function ShipManagementLayout() {
                     open={mobileOpen}
                     onClose={handleDrawerToggle}
                     ModalProps={{
-                        keepMounted: true, // Better open performance on mobile.
+                        keepMounted: true,
                     }}
                     sx={{
                         display: { xs: 'block', md: 'none' },

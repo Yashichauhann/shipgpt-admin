@@ -2,7 +2,7 @@ import { shippublicApi, shipsecuredApi } from "./config";
 export const shipControllers = {
     createShip:async(data)=>{
         try{
-            let result= await shipsecuredApi.post("/ship",data)
+            let result= await shipsecuredApi.post("/ships",data)
             return result
         }
         catch(error){

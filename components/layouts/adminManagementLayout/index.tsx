@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { authControllers } from "@/api/auth";
+import { toast } from "react-toastify";
 import Sidebar from "@/components/widgets/Sidebar";
 import Navbar from "@/components/widgets/Navbar";
 import {
@@ -51,6 +52,7 @@ export default function AdminManagementLayout() {
             setAdmins(admins.map(a => a.id === selectedAdmin.id ? { ...a, status: newStatus } : a));
             setOpenConfirmModal(false);
             setSelectedAdmin(null);
+            toast.success(`Admin ${newStatus === 'Active' ? 'enabled' : 'disabled'} successfully!`);
         }
     };
 
@@ -125,15 +127,15 @@ export default function AdminManagementLayout() {
             try {
                 await authControllers.createAdmin(values);
                 setOpenAddModal(false);
-                alert("Admin created successfully!");
+                toast.success("Admin created successfully!");
                 formik.resetForm();
             } catch (error: any) {
                 console.error("Error creating admin:", error);
                 if (error.response && error.response.data && error.response.data.errors) {
                     const apiErrors = error.response.data.errors;
-                    alert(apiErrors.join("\n"));
+                    toast.error(apiErrors.join("\n"));
                 } else {
-                    alert(error.response?.data?.message || "Failed to create admin");
+                    toast.error(error.response?.data?.message || "Failed to create admin");
                 }
             } finally {
                 setSubmitting(false);

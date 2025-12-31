@@ -1,5 +1,6 @@
 "use client";
-import { useState,useEffect } from "react";
+import { useState, useEffect } from "react";
+import { toast } from "react-toastify";
 import Sidebar from "@/components/widgets/Sidebar";
 import Navbar from "@/components/widgets/Navbar";
 import {
@@ -74,16 +75,16 @@ export default function CrewManagementLayout() {
             try {
                 await authControllers.createCrew(values);
                 setOpenAddModal(false);
-                alert("Crew member created successfully!");
+                toast.success("Crew member created successfully!");
                 formik.resetForm();
                 // Optionally refetch crew list here if we had a getCrew API setup
             } catch (error: any) {
                 console.error("Error creating crew:", error);
                 if (error.response && error.response.data && error.response.data.errors) {
                     const apiErrors = error.response.data.errors;
-                    alert(apiErrors.join("\n"));
+                    toast.error(apiErrors.join("\n"));
                 } else {
-                    alert(error.response?.data?.message || "Failed to create crew member");
+                    toast.error(error.response?.data?.message || "Failed to create crew member");
                 }
             } finally {
                 setSubmitting(false);
@@ -116,7 +117,7 @@ export default function CrewManagementLayout() {
 
     // Placeholder for Edit - purely visual for now since we focus on Create API
     const handleUpdateCrew = () => {
-        alert("Update functionality coming soon");
+        toast.info("Update functionality coming soon");
         setOpenViewModal(false);
     };
 
@@ -131,6 +132,7 @@ export default function CrewManagementLayout() {
             setCrew(crew.map(c => c.id === selectedCrew.id ? { ...c, status: selectedCrew.status === "Active" ? "Inactive" : "Active" } : c));
             setOpenConfirmModal(false);
             setSelectedCrew(null);
+            toast.success(`Crew member ${selectedCrew.status === "Active" ? "disabled" : "enabled"} successfully!`);
         }
     };
 
@@ -184,33 +186,31 @@ export default function CrewManagementLayout() {
         border: '1px solid var(--border)',
         textAlign: 'center'
     };
-    const fetchCrew=async()=>{
-        try{
-            const response= await authControllers.getUsers({user_role:'CREW'});
+    const fetchCrew = async () => {
+        try {
+            const response = await authControllers.getUsers({ user_role: 'CREW' });
             console.log("crew fetched raw:", response.data);
-            let data : any[]=[];
-            if(response.data?.data?.docs && Array.isArray(response.data.data.docs))
-            {
-                data=response.data.data.docs;
+            let data: any[] = [];
+            if (response.data?.data?.docs && Array.isArray(response.data.data.docs)) {
+                data = response.data.data.docs;
 
             }
-            else{
+            else {
                 console.warn("crew fetched raw:", response.data);
-                data=[];
+                data = [];
             }
             setCrew(data);
-            
+
         }
-        catch(error)
-        {
+        catch (error) {
             console.error("Error fetching crew:", error);
             setCrew([]);
-            
+
         }
     };
-    useEffect(()=>{
+    useEffect(() => {
         fetchCrew();
-    },[]);
+    }, []);
 
 
     return (

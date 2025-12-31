@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { scienceGothic, poppins } from "@/utils/fonts";
 import "./globals.css";
 import { AppRouterCacheProvider } from '@mui/material-nextjs/v15-appRouter';
+import ToastProvider from "@/components/ToastProvider";
 export const metadata: Metadata = {
   title: "Ship Gpt",
   description: "Ship Gpt",
@@ -17,6 +18,7 @@ export default function RootLayout({
         <AppRouterCacheProvider>
           {children}
         </AppRouterCacheProvider>
+        <ToastProvider />
       </body>
     </html>
   );

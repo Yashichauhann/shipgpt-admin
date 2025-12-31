@@ -6,11 +6,11 @@ const publicApi = axios.create({
 const securedApi = axios.create({
     baseURL: serverConstants.authenticationUrls,
 });
-const shippublicApi =axios.create({
-    baseUrl:serverConstants.shipUrls,
+const shippublicApi = axios.create({
+    baseURL: serverConstants.shipUrls,
 });
-const shipsecuredApi =axios.create({
-    baseUrl:serverConstants.shipUrls,
+const shipsecuredApi = axios.create({
+    baseURL: serverConstants.shipUrls,
 });
 shipsecuredApi.interceptors.request.use(
     (config) => {
@@ -29,5 +29,5 @@ securedApi.interceptors.request.use(
         }
         return config;
     });
-export { publicApi, securedApi,shippublicApi,shipsecuredApi };
+export { publicApi, securedApi, shippublicApi, shipsecuredApi };
 

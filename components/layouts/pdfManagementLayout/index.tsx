@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import DashboardLayout from "@/components/layouts/dashboardLayout";
+import { toast } from "react-toastify";
 import {
     Box,
     Typography,
@@ -52,6 +53,7 @@ export default function PdfManagementLayout() {
                 size: (newFile.size / (1024 * 1024)).toFixed(2) + " MB",
                 date: new Date().toISOString().split('T')[0]
             }]);
+            toast.success(`File "${newFile.name}" uploaded successfully!`);
         }
     };
 
@@ -65,6 +67,7 @@ export default function PdfManagementLayout() {
                 size: (newFile.size / (1024 * 1024)).toFixed(2) + " MB",
                 date: new Date().toISOString().split('T')[0]
             }]);
+            toast.success(`File "${newFile.name}" uploaded successfully!`);
         }
     };
 
@@ -153,7 +156,10 @@ export default function PdfManagementLayout() {
                                             <IconButton edge="end" sx={{ color: 'var(--foreground)', mr: 1 }}>
                                                 <DownloadIcon />
                                             </IconButton>
-                                            <IconButton edge="end" sx={{ color: 'var(--foreground)' }} onClick={() => setFiles(files.filter(f => f.id !== file.id))}>
+                                            <IconButton edge="end" sx={{ color: 'var(--foreground)' }} onClick={() => {
+                                                setFiles(files.filter(f => f.id !== file.id));
+                                                toast.success("File deleted successfully!");
+                                            }}>
                                                 <DeleteIcon />
                                             </IconButton>
                                         </ListItemSecondaryAction>

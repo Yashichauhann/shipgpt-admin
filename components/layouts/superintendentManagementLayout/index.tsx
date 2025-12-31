@@ -5,6 +5,7 @@ import Navbar from "@/components/widgets/Navbar";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { authControllers } from "@/api/auth";
+import { toast } from "react-toastify";
 import {
     Box,
     Typography,
@@ -83,15 +84,15 @@ export default function SuperintendentManagementLayout() {
                 try {
                     await authControllers.createSuperintendent(values);
                     setOpenAddModal(false);
-                    alert("Superintendent created successfully!");
+                    toast.success("Superintendent created successfully!");
                     resetForm();
                     fetchSuperintendents();
                 } catch (error: any) {
                     console.error("Error creating superintendent:", error);
                     if (error.response && error.response.data && error.response.data.errors) {
-                        alert(error.response.data.errors.join("\n"));
+                        toast.error(error.response.data.errors.join("\n"));
                     } else {
-                        alert(error.response?.data?.message || "Failed to create superintendent");
+                        toast.error(error.response?.data?.message || "Failed to create superintendent");
                     }
                 } finally {
                     setSubmitting(false);
@@ -145,7 +146,7 @@ export default function SuperintendentManagementLayout() {
                 firstName: selectedSuperintendent.firstName,
                 lastName: selectedSuperintendent.lastName,
                 email: selectedSuperintendent.email,
-                password: "" 
+                password: ""
             });
             setIsEditing(true);
         }
@@ -169,6 +170,7 @@ export default function SuperintendentManagementLayout() {
             setSuperintendents(superintendents.map(c => c.id === selectedSuperintendent.id ? { ...c, status: newStatus } : c));
             setOpenConfirmModal(false);
             setSelectedSuperintendent(null);
+            toast.success(`Superintendent ${newStatus === "Active" ? "enabled" : "disabled"} successfully!`);
         }
     };
 
